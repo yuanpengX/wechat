@@ -91,20 +91,43 @@ def weather(city):
 	content = urllib2.urlopen(req).read() # 从服务器给定的字符串会是一个str
 	#content = content.decode("utf-8") #将其转化成utf-8编码后可以正常显示
 	if content:
+		ERROR = u"无记录"
 		data = json.loads(content)
 		base = data[BASIC_SERVICE][0]
-		if base['status'] is not "ok":
-			return u"抱歉，无法查询到你输入的城市"
-		CITY = base["basic"]["city"]
-		WEATHER = base["now"]["cond"]["txt"]
-		TEMPRATURE = base["now"]["tmp"]
-		QUALITY = base["aqi"]["city"]["aqi"]
-		PM25 = base["aqi"]["city"]["pm25"]
-		SPORT = base["suggestion"]["sport"]['txt']
-		TRAVEL = base["suggestion"]["uv"]['txt']
-		content = u"查询到的天气如下:\n城市：" + CITY + u"\n天气："+ WEATHER
-		content = content + u"\n温度："+ TEMPRATURE+u"C\n空气质量指数:"+QUALITY+u"\nPM2.5:"+PM25
-		content = content + u"\n运动建议:" + SPORT +u"\n户外建议：" +TRAVEL
+		if base['status'] == "ok":
+			try:
+				CITY = base["basic"]["city"]
+			except KeyError:
+				CITY = ERROR
+			try:
+				WEATHER = base["now"]["cond"]["txt"]
+			except KeyError:
+				WEATHER = ERROR
+			try:
+				TEMPRATURE = base["now"]["tmp"]
+			except KeyError:
+				TEMPRATURE = ERROR
+			try:
+				QUALITY = base["aqi"]["city"]["aqi"]
+			except KeyError:
+				QUALITY = ERROR
+			try:
+				PM25 = base["aqi"]["city"]["pm25"]
+			except KeyError:
+				PM25 = ERROR
+			try:
+				SPORT = base["suggestion"]["sport"]['txt']
+			except KeyError:
+				SPORT = ERROR
+			try:
+				TRAVEL = base["suggestion"]["uv"]['txt']
+			except KeyError:
+				TRAVEL = ERROR
+			content = u"查询到的天气如下:\n城市：" + CITY + u"\n天气："+ WEATHER
+			content = content + u"\n温度："+ TEMPRATURE+u"C\n空气质量指数:"+QUALITY+u"\nPM2.5:"+PM25
+			content = content + u"\n运动建议:" + SPORT +u"\n户外建议：" +TRAVEL
+		else:
+			content = u"抱歉，暂时无法查询你输入的城市"
 	else:
 		content = u"对不起，无法得到有效的信息"
 	return content
