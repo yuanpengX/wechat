@@ -93,6 +93,8 @@ def weather(city):
 	if content:
 		data = json.loads(content)
 		base = data[BASIC_SERVICE][0]
+		if base['status'] is not "ok":
+			return u"抱歉，无法查询到你输入的城市"
 		CITY = base["basic"]["city"]
 		WEATHER = base["now"]["cond"]["txt"]
 		TEMPRATURE = base["now"]["tmp"]
