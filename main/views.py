@@ -56,7 +56,11 @@ def reply(request):
 	xml = smart_str(request.body)
 	msg = parse_msg(xml)
 	#将获得的数据原样返回给服务器
-	content = weather(msg["Content"])
+	content = msg["Content"]
+	#从微信服务器里传过来的是UNICODE中文编码方式
+	if type(content).__name__ == "unicode":
+		content = content.encode('UTF-8') # 通过这个把他编码成str
+	content = weather(content)
 	return render(request,'reply_text.xml',
 				{'toUser':msg["FromUserName"],
 				'fromUser':msg["ToUserName"],
@@ -76,12 +80,29 @@ def parse_msg(rawStr):
 
 def weather(city):
 	global API_STORE_KEY
+	BASIC_SERVICE = "HeWeather data service 3.0"
 	# 构造网址
+	city = urllib2.quote(city)
 	url = 'http://apis.baidu.com/heweather/weather/free?city='+city
 	apikey = API_STORE_KEY
 	req = urllib2.Request(url)
 	req.add_header("apikey", apikey)
 	#利用API请求天气
-	resp = urllib2.urlopen(req)
-	content = resp.read()
+	content = urllib2.urlopen(req).read() # 从服务器给定的字符串会是一个str
+	#content = content.decode("utf-8") #将其转化成utf-8编码后可以正常显示
+	if content:
+		data = json.loads(content)
+		base = data[BASIC_SERVICE][0]
+		CITY = base["basic"]["city"]
+		WEATHER = base["now"]["cond"]["txt"]
+		TEMPRATURE = base["now"]["tmp"]
+		QUALITY = base["aqi"]["city"]["aqi"]
+		PM25 = base["aqi"]["city"]["pm25"]
+		SPORT = base["suggestion"]["sport"]['txt']
+		TRAVEL = base["suggestion"]["uv"]['txt']
+		content = u"查询到的天气如下:\n城市：" + CITY + u"\n天气："+ WEATHER
+		content = content + u"\n温度："+ TEMPRATURE+u"C\n空气质量指数:"+QUALITY+u"\nPM2.5:"+PM25
+		content = content + u"\n运动建议:" + SPORT +u"\n户外建议：" +TRAVEL
+	else:
+		content = u"对不起，无法得到有效的信息"
 	return content
