@@ -23,7 +23,8 @@ def process(request):
 	if request.method == 'GET':
 		return HttpResponse(checkSignature(request))
 	elif request.method == "POST":
-		return reply(request)
+		x = reply(request)
+		return HttpResponse(x,content_type="application/xml")
 
 #用GET方法做签名验证
 def checkSignature(request):
@@ -54,9 +55,9 @@ def reply(request):
 	msg = parse_msg(xml)
 	#将获得的数据原样返回给服务器
 	return render(request,'reply_text.xml',
-				{'toUser':msg["fromUserName"],
-				'fromUser':msg["toUserName"],
-				'createTime':time.time(),
+				{'toUser':msg["FromUserName"],
+				'fromUser':msg["ToUserName"],
+				'createTime':str(int(time.time())),
 				'msgType':msg["MsgType"],
 				'content':msg["Content"],
 				},
