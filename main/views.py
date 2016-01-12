@@ -1,11 +1,14 @@
+
+#coding=gb2312
 from django.shortcuts import render
 from django.http import HttpResponse
 import time
+import hashlib
 import os
-# python django æä¾›çš„è‰¯å¥½å¤„ç†ä¸­æ–‡çš„åº“
+# python django Ìá¹©µÄÁ¼ºÃ´¦ÀíÖĞÎÄµÄ¿â
 from django.utils.encoding import smart_str
 from django.views.decorators.csrf import csrf_exempt  
-# åŠ åœ¨ä¸€ä¸ªXMLçš„è§£æåº“
+# ¼ÓÔÚÒ»¸öXMLµÄ½âÎö¿â
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
@@ -14,42 +17,42 @@ except ImportError:
 
 TOKEN = "diaoxiong"
 APP_ID = "wx45779b96e3d17b91"
-#ç¦ç”¨DJANGoæä¾›çš„è·¨ç«™è„šæœ¬æ”»å‡»æœåŠ¡
-@csrf_exempt  
+#½ûÓÃDJANGoÌá¹©µÄ¿çÕ¾½Å±¾¹¥»÷·şÎñ
+@csrf_exempt
 def process(request):
 	if request.method == 'GET':
 		return HttpResponse(checkSignature(request))
 	elif request.method == "POST":
 		return reply(request)
 
-#ç”¨GETæ–¹æ³•åšç­¾åéªŒè¯
+#ÓÃGET·½·¨×öÇ©ÃûÑéÖ¤
 def checkSignature(request):
 	global TOKEN
-	#è·å¾—æœåŠ¡å™¨GETçš„å†…å®¹
+	#»ñµÃ·şÎñÆ÷GETµÄÄÚÈİ
 	signature = request.GET.get("signature",None)
 	timestamp = request.GET.get("timestamp",None)
 	nonce = request.GET.get("nonce",None)
 	echoStr = request.GET.get("echostr",None)
-	#å–å¾—è‡ªå·±çš„token
+	#È¡µÃ×Ô¼ºµÄtoken
 	token = TOKEN
-	#å¯¹æ•°æ®æ’åº
+	#¶ÔÊı¾İÅÅĞò
 	tmpList = [token,nonce,timestamp]
 	tmpList.sort()
-	tmpStr = "%s%s%s"%tuple(tmpList)
-	#è®¡ç®—SHA1ä¿¡æ¯æ‘˜è¦
+	tmpStr = "%s%s%s"% tuple(tmpList)
+	#¼ÆËãSHA1ĞÅÏ¢ÕªÒª
 	tmpStr = hashlib.sha1(tmpStr).hexdigest()
 	if tmpStr == signature:
-		#æ‘˜è¦ä¸ç­¾åä¸€è‡´
+		#ÕªÒªÓëÇ©ÃûÒ»ÖÂ
 		return echoStr
 	else:
 		return "Hello World"
 
-#é’ˆå¯¹æœåŠ¡å™¨POSTçš„æ•°æ®åšå›å¤å¤„ç†
+#Õë¶Ô·şÎñÆ÷POSTµÄÊı¾İ×ö»Ø¸´´¦Àí
 def reply(request):
-	# å°†è·å¾—çš„XMLæ•°æ®è¿›è¡Œä¸€æ¬¡è§£æ
+	# ½«»ñµÃµÄXMLÊı¾İ½øĞĞÒ»´Î½âÎö
 	xml = smart_str(request.body)
 	msg = parse_msg(xml)
-	#å°†è·å¾—çš„æ•°æ®åŸæ ·è¿”å›ç»™æœåŠ¡å™¨
+	#½«»ñµÃµÄÊı¾İÔ­Ñù·µ»Ø¸ø·şÎñÆ÷
 	return render(request,'reply_text.xml',
 				{'toUser':msg["fromUserName"],
 				'fromUser':msg["toUserName"],
@@ -59,7 +62,7 @@ def reply(request):
 				},
 				content_type = "application/xml")
 
-#å°†æ¶ˆæ¯è§£ææˆå­—å…¸ç±»å‹
+#½«ÏûÏ¢½âÎö³É×ÖµäÀàĞÍ
 def parse_msg(rawStr):
 	root = ET.fromstring(rawStr)
 	msg = {}

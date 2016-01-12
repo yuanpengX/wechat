@@ -56,7 +56,7 @@ ROOT_URLCONF = 'wechat.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.join(BASE_DIR,'main/template'),],
+        'DIRS': [os.path.join(BASE_DIR,'main/template'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
